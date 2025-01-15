@@ -18,18 +18,26 @@ export class UtilidadService {
     })
   }
 
-  guardarSesionUsuario(usuarioSesion:Sesion){
-    localStorage.setItem("usuario",JSON.stringify(usuarioSesion))
-  }
 
-  obtenerSesionUsuario(){
-    const dataCadena= localStorage.getItem("usuario");
-    const usuario= JSON.parse(dataCadena!);
-    return usuario;
+ guardarSesionUsuario(usuarioSesion: Sesion): void {
+  if (usuarioSesion) {
+    sessionStorage.setItem("usuario", JSON.stringify(usuarioSesion));
+  } else {
+    console.log("Usuario Null");
   }
+}
 
-  eliminarSesionUsuario(){
-    localStorage.removeItem("usuario");
+obtenerSesionUsuario(): Sesion | null {
+  const dataCadena = sessionStorage.getItem("usuario");
+  if (dataCadena) {
+    return JSON.parse(dataCadena!);
   }
+  return null;
+}
+
+eliminarSesionUsuario(): void {
+  sessionStorage.removeItem("usuario");
+}
+
 
 }

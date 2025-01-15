@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Login } from 'src/app/Interfaces/login';
 import { UsuarioService } from 'src/app/Services/usuario.service';
@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   formularioLogin: FormGroup;
   ocultarPassword: boolean = true;
   mostrarLoading: boolean = false;
@@ -26,9 +26,13 @@ export class LoginComponent {
       password: ["", Validators.required]
     });
   }
+  ngOnInit(): void {
+
+  }
 
   iniciarSesion() {
     this.mostrarLoading = true;
+
     const request: Login = {
       correo: this.formularioLogin.value.email,
       clave: this.formularioLogin.value.password
@@ -43,12 +47,14 @@ export class LoginComponent {
           this._utilidadService.mostrarAlerta("No se Encontraron Coincidencias", "Opps! :(");
         }
       },
+      error: (error) => {
+        console.error('Error durante el inicio de sesión:', error);
+        this._utilidadService.mostrarAlerta("Ha Ocurrido un Error", "Error Inesperado!");
+      },
       complete: () => {
         this.mostrarLoading = false;
-      },
-      error: (error) => { // Agregado el parámetro 'error' para manejar errores
-        this._utilidadService.mostrarAlerta("Ha Ocurrido un Error", "Error Inesperado!");
       }
     });
   }
+
 }

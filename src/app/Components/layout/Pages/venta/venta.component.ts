@@ -32,11 +32,11 @@ export class VentaComponent {
 
   formularioProductoVenta:FormGroup;
   columnasTabla:string[]=['Producto','Cantidad','Precio','Total','Accion' ];
-  datosDetallVenta=new MatTableDataSource(this.listaProductosVenta);
+  datosDetalleVenta=new MatTableDataSource(this.listaProductosVenta);
 
   retornarProductosPorFiltro(busqueda:any):Producto[]{
-    const valosBuscado=typeof busqueda==="string" ? busqueda.toLowerCase:busqueda.nombre.toLowerCase();
-    return this.listaProductos.filter((item => item.nombre.toLocaleLowerCase().includes(valosBuscado)));
+    const valorBuscado=typeof busqueda==="string" ? busqueda.toLowerCase():busqueda.nombre.toLowerCase();
+    return this.listaProductos.filter((item => item.nombre.toLowerCase().includes(valorBuscado)));
   }
 
   constructor(private fb:FormBuilder,
@@ -63,7 +63,7 @@ export class VentaComponent {
       })
 
       //funcion para cuando se filtre muestre resultado con el Producto
-      this.formularioProductoVenta.get('Producto')?.valueChanges.subscribe(value =>{
+      this.formularioProductoVenta.get('producto')?.valueChanges.subscribe(value =>{
         this.listaProductosFiltro= this.retornarProductosPorFiltro(value)
       });
   }
@@ -80,7 +80,7 @@ export class VentaComponent {
   //Registrar Producto para venta
   agregarProductoVenta(){
     const _cantidad:number=this.formularioProductoVenta.value.cantidad;
-    const _precio:number  = parseFloat(this.formularioProductoVenta.value.precio);
+    const _precio:number  = parseFloat(this.productoSeleccionado.precio);
     const _total:number=_cantidad*_precio;
     this.totalPagar=this.totalPagar+_total;
 
@@ -92,12 +92,55 @@ export class VentaComponent {
       totalTexto:String(_total.toFixed(2))
     })
 
-    this.datosDetallVenta=new MatTableDataSource(this.listaProductosVenta);
+    this.datosDetalleVenta=new MatTableDataSource(this.listaProductosVenta);
     this.formularioProductoVenta.patchValue({
       producto:'',
       _cantidad:''
     })
 
+  }
+
+  eliminarProducto(detalleVenta:DetalleVenta){
+    this.totalPagar=this.totalPagar -parseFloat(detalleVenta.totalTexto);
+    this.listaProductosVenta=this.listaProductosVenta.filter(p => p.idProducto!= detalleVenta.idProducto);
+
+    //Actualizar la lista de productos de venta.
+    this.datosDetalleVenta= new MatTableDataSource(this.listaProductosVenta);
+
+  }
+
+  registrarVenta (){
+
+    if(this.listaProductosVenta.length > 0 ){
+      this.bloquearBotonRegistrar=true;
+
+      const request: Venta = {
+        tipoPago:this.tipoPagoPorDefecto,
+        totalTexto:String(this.totalPagar.toFixed(2)),
+        detalleVenta:this.listaProductosVenta
+      }
+
+      this._ventaService.RegistrarVenta(request).subscribe({
+        next:(response)=>{
+          if(response.status){
+            this.totalPagar=0.00;
+            this.listaProductosVenta=[];
+            this.datosDetalleVenta= new MatTableDataSource(this.listaProductosVenta);
+
+            Swal.fire({
+              icon:'success',
+              title:'Venta Registrada :)',
+              text:`Numero de Venta ${response.value.numeroDocumento}`
+            });
+          } else
+            this._utilidadService.mostrarAlerta("No se Pudo Realizar el Registro de la Venta","Oops! :(");
+        },
+        complete:()=>{
+          this.bloquearBotonRegistrar=false;
+        },
+        error:(e)=>{}
+      })
+    }
   }
 
 }
