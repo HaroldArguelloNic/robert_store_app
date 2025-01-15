@@ -6,23 +6,30 @@ class UserController {
   final Database database = Database();
 
   Future<List<UserModel>> getUsers() async {
-    await Database.createDatabase();
+    Database.createDatabase();
     final connection = await Database.connect();
     List<UserModel> users = [];
 
     final rows = await connection.query('SELECT * FROM users');
     for (var row in rows) {
-      users.add(UserModel.fromMap(row as Map<String, dynamic>));
+      var user = UserModel(
+        id: row[0],
+        username: row[1],
+        email: row[2],
+        password: row[3],
+        usertype: row[4],
+      );
+      users.add(user);
     }
-
     return users;
   }
 
-  Future<void> addUser(String name, String email) async {
-    await Database.createDatabase();
+  addUser(String name, String email, String password, int usertype) async {
+    Database.createDatabase();
     final connection = await Database.connect();
 
-    await connection
-        .query('INSERT INTO users (name, email) VALUES (?, ?)', [name, email]);
+    connection.query(
+        'INSERT INTO users (name, email, password, usertype) VALUES (?, ?, ?, ?)',
+        [name, email, password, usertype]);
   }
 }

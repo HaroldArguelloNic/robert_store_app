@@ -2,24 +2,24 @@ import 'package:mysql1/mysql1.dart';
 //import 'package:path_provider/path_provider.dart';
 
 class Database {
-  static Future<MySqlConnection> connect() async {
+  static Future<MySqlConnection> connect() {
     // final Directory directory = await getTemporaryDirectory();
     // String dbPath = directory.path + '/database.db';
 
-    final connection = await MySqlConnection.connect(ConnectionSettings(
-      host: 'localhost',
+    var settings = ConnectionSettings(
+      host: '10.0.2.2',
       port: 3306,
-      user: 'your_username',
-      password: 'your_password',
-      db: 'your_database',
-    ));
-
-    return connection;
+      user: 'robertstoreapp',
+      password: 'storenicaragua',
+      db: 'robertstoreappdb',
+    );
+    var conn = MySqlConnection.connect(settings);
+    return conn;
   }
 
-  static Future<void> createDatabase() async {
+  static void createDatabase() async {
     final connection = await connect();
     await connection.query(
-        'CREATE TABLE IF NOT EXISTS users (id INT PRIMARY KEY, name VARCHAR(255), email VARCHAR(255));');
+        'CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), email VARCHAR(255), password VARCHAR(20), usertype int(10));');
   }
 }
